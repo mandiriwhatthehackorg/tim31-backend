@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Group;
+use App\Session;
+use App\Transaction;
+use App\UserGroup;
 use Illuminate\Http\Request;
 
 class GroupController extends Controller
@@ -12,9 +15,23 @@ class GroupController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $groups = Group::all();
+
+        if($request->limit != null) {
+            $groupIds = UserGroup::take($request->limit)->where('user_id', $request->user_id)->pluck('group_id');
+            error_log($groupIds);
+            $groups = Group::whereIn("id", $groupIds)->get();
+        } else {
+            $groups = Group::all();
+        }
+
+        foreach ($groups as $group) {
+            $total = $this->collectCurrentAmount($group->id);
+            $group->current_balance = $total;
+            $group->percentage = number_format((float)$total / $group->target_amount, 2, '.', '');
+
+        }
 
         return response()->json($groups);
     }
@@ -37,7 +54,30 @@ class GroupController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $group = Group::create($request->all());
+
+        UserGroup::create([
+            "user_id" => $request->user_id,
+            "group_id" => $group->id
+        ]);
+
+        return response()->json($group);
+    }
+
+    private function collectCurrentAmount($groupId) {
+        $sessions = Session::where("group_id", $groupId)->get();
+
+        $total = 0;
+
+        foreach ($sessions as $session) {
+            $transactions = Transaction::where('session_id', $session->id)->get();
+
+            foreach ($transactions as $transaction) {
+                $total += $transaction->amount;
+            }
+        }
+
+        return $total;
     }
 
     /**

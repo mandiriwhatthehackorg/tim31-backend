@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Transaction;
 use Illuminate\Http\Request;
+use DB;
 
 class TransactionController extends Controller
 {
@@ -12,9 +13,18 @@ class TransactionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $transaction = DB::table('transactions')
+                         ->join('users', 'users.id', '=', 'transactions.user_id')
+                         ->join('sessions', 'sessions.id', '=', 'transactions.session_id')
+                         ->join('groups', 'groups.id', '=', 'sessions.group_id')
+                         ->whereMonth('transactions.created_at', '=', $request->month)
+                         ->take($request->limit)
+                         ->select('users.name as username', 'transactions.amount', 'transactions.created_at', "groups.name", "transactions.isOut as is_out")
+                         ->get();
+
+        return response()->json($transaction);
     }
 
     /**

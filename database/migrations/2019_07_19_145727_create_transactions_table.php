@@ -21,8 +21,8 @@ class CreateTransactionsTable extends Migration
             $table->unsignedBigInteger("session_id");
             $table->timestamps();
 
-            $table->foreign('user_id')->references('id')->on('users');
-            $table->foreign('session_id')->references('id')->on('sessions');
+//            $table->foreign('user_id')->references('id')->on('users');
+//            $table->foreign('session_id')->references('id')->on('sessions');
         });
     }
 

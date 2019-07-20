@@ -18,3 +18,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::get("/groups", "GroupController@index");
+Route::post("/groups", "GroupController@store");
+
+Route::get('/transactions', "TransactionController@index");
