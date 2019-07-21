@@ -112,7 +112,7 @@ class AllSeeder extends Seeder
         for($i=1; $i<=25; $i++) {
             $isOut = $i % 2;
             App\Transaction::create([
-                "user_id" => $j,
+                "user_id" => rand(1, 5),
                 "amount" => $transactions[$i],
                 "isOut" =>  $isOut,
                 "session_id" => $i,
